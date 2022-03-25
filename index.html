@@ -1,0 +1,549 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>区块链性能腾飞：基于DAG的并行交易执行引擎 &mdash; FISCO BCOS v2.8.0 文档</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+        <script type="text/javascript" src="../../../../_static/copybutton.js"></script>
+        <script type="text/javascript" src="../../../../_static/js/readthedocs-analytics.js"></script>
+        <script type="text/javascript" src="../../../../_static/translations.js"></script>
+        <script async="async" type="text/javascript" src="https://assets.readthedocs.org/static/javascript/readthedocs-doc-embed.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="索引" href="../../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../../search.html" />
+    <link rel="next" title="让木桶没有短板，FISCO BCOS全面推进并行化改造" href="parallel_transformation.html" />
+    <link rel="prev" title="FISCO BCOS 2.0使用教程： 分布式存储体验" href="distributed_storage_experience.html" /> 
+
+<!-- RTD Extra Head -->
+
+<link rel="stylesheet" href="https://assets.readthedocs.org/static/css/readthedocs-doc-embed.css" type="text/css" />
+
+<script type="application/json" id="READTHEDOCS_DATA">{"ad_free": false, "api_host": "https://readthedocs.org", "build_date": "2022-03-14T06:28:58Z", "builder": "sphinx", "canonical_url": null, "commit": "b34671a7", "docroot": "/2.x/", "features": {"docsearch_disabled": false}, "global_analytics_code": "UA-17997319-1", "language": "zh_CN", "page": "docs/articles/3_features/30_architecture/dag-based_parallel_transaction_execution_engine", "programming_language": "words", "project": "fisco-bcos-documentation", "proxied_api_host": "/_", "source_suffix": ".md", "subprojects": {"fisco-bcos-en-documentation": "https://fisco-bcos-documentation.readthedocs.io/en/latest/"}, "theme": "sphinx_rtd_theme", "user_analytics_code": "", "version": "latest"}</script>
+
+<!--
+Using this variable directly instead of using `JSON.parse` is deprecated.
+The READTHEDOCS_DATA global variable will be removed in the future.
+-->
+<script type="text/javascript">
+READTHEDOCS_DATA = JSON.parse(document.getElementById('READTHEDOCS_DATA').innerHTML);
+</script>
+
+<script type="text/javascript" src="https://assets.readthedocs.org/static/javascript/readthedocs-analytics.js" async="async"></script>
+
+<!-- end RTD <extrahead> -->
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> FISCO BCOS
+          
+
+          
+          </a>
+
+          
+            
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+<br>
+<img style="background-color:#fff; height: unset; width: unset;" alt="FISCO BCOS"
+    src=../../../../_static/images/FISCO_BCOS_Logo.svg />
+<a href="https://github.com/FISCO-BCOS"><img style="background: transparent; padding: 0px; margin: auto auto auto auto; height: 30px;"
+        alt="GitHub" src="../../../../_static/images/github_button.svg" /></a>
+<a href="../../../community.html#QR"><img
+        style="background: transparent; padding: 0px; margin: auto auto auto auto; height: 30px;" alt="微信群和公众号"
+        src="../../../../_static/images/wechat_button.svg" /></a>
+<a href="https://twitter.com/FiscoBcos"><img style="background: transparent; padding: 0px; margin: auto auto auto auto; height: 30px;"
+        alt="Twitter" src="../../../../_static/images/twitter_button.svg" /></a>
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">平台介绍</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">FISCO BCOS 区块链</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log/index.html">版本信息</a></li>
+</ul>
+<p class="caption"><span class="caption-text">快速开始</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">搭建第一个区块链网络</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/sdk_application.html">开发第一个区块链应用</a></li>
+</ul>
+<p class="caption"><span class="caption-text">构建和管理区块链网络</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial/key_concepts.html">关键概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../blockchain_dev/env.html">网络搭建</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../blockchain_dev/config.html">配置管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../blockchain_dev/maintain.html">网络维护</a></li>
+</ul>
+<p class="caption"><span class="caption-text">开发区块链应用</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../manual/account.html">创建和使用账户</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../app_dev/index.html">开发和使用智能合约</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sdk/index.html">多种语言SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">区块链功能接口列表</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../manual/amop_protocol.html">使用链上信使</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq/index.html">开发期问题排查</a></li>
+</ul>
+<p class="caption"><span class="caption-text">使用工具</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../manual/build_chain.html">开发部署工具(build_chain.sh)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../console/index.html">命令行交互控制台</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../webase/webase.html">WeBASE管理平台</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../browser/index.html">区块链浏览器</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../enterprise_tools/index.html">运维部署工具</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../webank_blockchain/data_index.html">数据治理通用组件</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../webank_blockchain/governance_index.html">多方协作治理组件</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../webank_blockchain/smartdev_index.html">区块链应用开发组件</a></li>
+</ul>
+<p class="caption"><span class="caption-text">系统设计</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../design/architecture/index.html">整体架构</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../design/tx_procedure.html">区块链交易流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../design/protocol_description.html">数据结构与编码协议</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../design/index.html">核心模块设计解析</a></li>
+</ul>
+<p class="caption"><span class="caption-text">社区</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../community/MVP_list_new.html">MVP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../community/contributor_list_new.html">贡献者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../community/partner_list_new.html">合作伙伴</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">深入浅出FISCO BCOS</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id1">介绍</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id2">区块链的概念与原理</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id3">区块链学习必读</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#id4">FISCO BCOS的原理和特性</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">整体架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../31_performance/index.html">FISCO BCOS性能</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../32_consensus/index.html">共识算法</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../33_storage/index.html">关于存储</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../34_protocol/index.html">网络协议</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../35_contract/index.html">智能合约</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../36_cryptographic/index.html">密码算法和协议</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../37_safety/index.html">安全控制</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../38_privacy/index.html">隐私保护</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../39_wecross/index.html">跨链协议</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id5">FISCO BCOS的部署运维与实战工具</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id6">如何参与社区开发协作</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id7">FISCO BCOS应用实践</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id8">社区开发实践</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#id9">社区写作指南</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../community.html">社区资源和更多开源工具</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">FISCO BCOS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">深入浅出FISCO BCOS</a> &raquo;</li>
+        
+          <li><a href="index.html">整体架构</a> &raquo;</li>
+        
+      <li>区块链性能腾飞：基于DAG的并行交易执行引擎</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/FISCO-BCOS/FISCO-BCOS-DOC/blob/release-2/2.x/docs/articles/3_features/30_architecture/dag-based_parallel_transaction_execution_engine.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dag">
+<h1>区块链性能腾飞：基于DAG的并行交易执行引擎<a class="headerlink" href="#dag" title="永久链接至标题">¶</a></h1>
+<p>作者：李陈希｜FISCO BCOS 核心开发者</p>
+<p>在区块链世界中，交易是组成事务的基本单元。交易吞吐量很大程度上能限制或拓宽区块链业务的适用场景，愈高的吞吐量，意味着区块链能够支持愈广的适用范围和愈大的用户规模。当前，反映交易吞吐量的TPS（Transaction per Second，每秒交易数量）是评估性能的热点指标。为了提高TPS，业界提出了层出不穷的优化方案，殊途同归，各种优化手段的最终聚焦点，均是尽可能提高交易的并行处理能力，降低交易全流程的处理时间。</p>
+<p>在多核处理器架构已经成为主流的今天，利用并行化技术充分挖掘CPU潜力是行之有效的方案。FISCO BCOS 2.0 中设计了一种基于DAG模型的并行交易执行器（PTE，Parallel Transaction Executor）。</p>
+<p>PTE能充分发挥多核处理器优势，使区块中的交易能够尽可能并行执行；同时对用户提供简单友好的编程接口，使用户不必关心繁琐的并行实现细节。基准测试程序的实验结果表明：相较于传统的串行交易执行方案，理想状况下4核处理器上运行的PTE能够实现约200%~300%的性能提升，且计算方面的提升跟核数成正比，核数越多性能越高。</p>
+<p>PTE为助力FISCO BCOS性能腾飞奠定了坚实基础，本文将全面介绍PTE的设计思路及实现方案，主要包括以下内容：</p>
+<ul class="simple">
+<li><strong>背景</strong>：传统方案的性能瓶颈与DAG并行模型的介绍</li>
+<li><strong>设计思路</strong>：PTE应用到FISCO BCOS中时遇到的问题以及解决方案</li>
+<li><strong>架构设计</strong>：应用PTE后FISCO BCOS的架构及核心流程</li>
+<li><strong>核心算法</strong>：介绍主要用到的数据结构与主要算法</li>
+<li><strong>性能测评</strong>：分别给出PTE的性能与可扩展性测试结果</li>
+</ul>
+<div class="section" id="id1">
+<h2>背景<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>FISCO BCOS交易处理模块可以被抽象为一个基于交易的状态机。在FISCO BCOS中，『状态』即是指区块链中所有账户的状态，而『基于交易』即是指FISCO BCOS将交易作为状态迁移函数，并根据交易内容从旧的状态更新为新的状态。FISCO BCOS从创世块状态开始，不断收集网络上发生的交易并打包为区块，并在所有参与共识的节点间执行区块中的交易。当一个区块内的交易在多个共识节点上执行完成且状态一致，则我们称在该块上达成了共识，并将该区块永久记录在区块链中。</p>
+<p>从上述区块链的打包→共识→存储过程中可以看到，执行区块中的所有交易是区块上链的必经之路。传统交易执行方案是：执行单元从待共识的区块逐条读出交易，执行完每一笔交易后，状态机都会迁移至下一个状态，直到所有交易都被串行执行完成，如下图所示：</p>
+<p><img alt="../../../../_images/IMG_5175.PNG" src="../../../../_images/IMG_5175.PNG" /></p>
+<p>显而易见，这种交易执行方式对性能并不友好。即使两笔交易没有交集，也只能按照先后顺序依次执行。就交易间的关系而言，既然一维的『线』结构有这般痛点，那何不把目光投向二维的『图』结构呢？</p>
+<p>在实际应用中，根据每笔交易执行时需要使用的互斥资源（互斥意味着对资源的排他性使用，比如在上述转账问题互斥资源中，指的就是各个账户的余额状态）， 我们可以组织出一张交易依赖关系图，为防止交易依赖关系在图中成环，我们可以规定交易列表中牵涉到相同的互斥资源，且排序靠后的交易，必须等待靠前的交易完成后才被执行，由此得到的输出便是一张反映交易依赖关系的有向无环图，即交易DAG。</p>
+<p>如下图所示，左侧的6笔转账交易可以组织为右侧的DAG形式：</p>
+<p><img alt="../../../../_images/IMG_5176.PNG" src="../../../../_images/IMG_5176.PNG" /></p>
+<p>在交易DAG中，入度为0的交易是没有任何依赖项、可以被立即投入运行的就绪交易。当就绪交易的数量大于1时，就绪交易可以被分散至多个CPU核心上并行执行。当一笔交易执行完，依赖于该交易的所有交易的入度减1，随着交易不断被执行，就绪交易也源源不断被产生。在极限情况下，假如构造出的交易DAG层数为1 （即所有交易均是没有依赖项的独立交易），则交易整体执行速度的提升倍数将直接取决于处理器的核心数量n，此时若n大于区块内的交易数，则区块内所有交易的执行时间与单笔交易执行的时间相同。</p>
+<p>理论上拥有如此让人无法拒绝的优美特性的交易DAG模型，该如何应用至FISCO BCOS中？</p>
+</div>
+<div class="section" id="id2">
+<h2>设计思路<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p><strong>要应用交易DAG模型，我们面临的首要问题便是：对于同一个区块，如何确保所有节点执行完后能够达到同一状态，这是一个关乎到区块链能否正常出块的关键问题。</strong></p>
+<p>FISCO BCOS采用验证(state root, transaction root, receipt root)三元组是否相等的方式，来判断状态是否达成一致。transaction root是根据区块内的所有交易算出的一个哈希值，只要所有共识节点处理的区块数据相同，则transaction root必定相同，这点比较容易保证，因此重点在于如何保证交易执行后生成的state和receipt root也相同。</p>
+<p>众所周知，对于在不同CPU核心上并行执行的指令，指令间的执行顺序无法提前预测，并行执行的交易也存在同样情况。在传统的交易执行方案中，每执行一笔交易，state root便发生一次变迁，同时将变迁后的state root写入交易回执中，所有交易执行完后，最终的state root就代表了当前区块链的状态，同时再根据所有交易回执计算出一个receipt root。</p>
+<p>可以看出，在传统的执行方案中，state root扮演着一个类似全局共享变量的角色。当交易被并行且乱序执行后，传统计算state root的方式显然不再适用，这是因为在不同的机器上，交易的执行顺序一般不同，此时无法保证最后的state root能够一致，同理，receipt root也无法保证一致。</p>
+<p>在FISCO BCOS中，我们采用的解决方案是先执行交易，将每笔交易对状态的改变历史记录下来，待所有交易执行完后，再根据这些历史记录再算出一个state root，同时，交易回执中的state root，也全部变为所有交易执行完后最终的state root，由此就可以保证即使并行执行交易，最后共识节点仍然能够达成一致。</p>
+<p><strong>搞定状态问题后，下一个问题便是：如何判断两笔交易之间是否存在依赖关系？</strong></p>
+<p>若两笔交易本来无依赖关系但被判定为有，则会导致不必要的性能损失；反之，如果这两笔交易会改写同一个账户的状态却被并行执行了，则该账户最后的状态可能是不确定的。因此，依赖关系的判定是影响性能甚至能决定区块链能否正常工作的重要问题。</p>
+<p>在简单的转账交易中，我们可以根据转账的发送者和接受者的地址，来判断两笔交易是否有依赖关系，比如如下3笔转账交易：A→B，C→D，D→E，可以很容易看出，交易D→E依赖于交易C→D的结果，但是交易A→B和其他两笔交易没有什么关系，因此可以并行执行。</p>
+<p>这种分析在只支持简单转账的区块链中是正确的，但是一旦放到图灵完备、运行智能合约的区块链中，则可能不那么准确，因为我们无法准确知道用户编写的转账合约中到底有什么操作，可能出现的情况是：A-&gt;B的交易看似与C、D的账户状态无关，但是在用户的底层实现中，A是特殊账户，通过A账户每转出每一笔钱必须要先从C账户中扣除一定手续费。在这种场景下，3笔交易均有关联，则它们之间无法使用并行的方式执行，若还按照先前的依赖分析方法对交易进行划分，则必定会掉坑。</p>
+<p>我们能否做到根据用户的合约内容自动推导出交易中实际存在哪些依赖项？答案是不太靠谱。我们很难去追踪用户合约中到底操作了什么数据，即使做到也需要花费不小的成本，这和我们优化性能的目标相去甚远。</p>
+<p>综上，我们决定在FISCO BCOS中，将交易依赖关系的指定工作交给更熟悉合约内容的开发者。具体地说，交易依赖的互斥资源可以由一组字符串表示，FISCO BCOS暴露接口给到开发者，开发者以字符串形式定义交易依赖的资源，告知链上执行器，执行器则会根据开发者指定的交易依赖项，自动将区块中的所有交易排列为交易DAG。比如在简单转账合约中，开发者仅需指定每笔转账交易的依赖项是｛发送者地址+接收者地址｝。进一步地，如开发者在转账逻辑中引入了另一个第三方地址，那么依赖项就需要定义为｛发送者地址+接受者地址+第三方地址｝了。</p>
+<p>这种方式实现起来较为直观简单，也比较通用，适用于所有智能合约，但也相应增加了开发者肩上的责任，开发者在指定交易依赖项时必须十分小心，如果依赖项没有写正确，后果无法预料。指定依赖项的相关接口会在后续文章中给出使用教程，本文暂且假定所有谈论到的交易依赖项都是明确无误的。</p>
+<p><strong>解决完上面两个比较重要的问题后，还剩下一些较为细节的工程问题：比如并行交易能否和非并行交易混合到一起执行？怎么保证资源字符串的全局唯一性？</strong></p>
+<p>答案也不复杂，前者可通过将非并行交易作为屏障（barrier）插入到交易DAG中——即我们认为，它即依赖于它的所有前序交易，同时又被它的所有后序交易依赖——来实现；后者可以通过在开发者指定的交易依赖项中，加入标识合约的特殊标志位解决。由于这些问题并不影响PTE的根本设计，本文暂不展开。</p>
+<p>万事俱备，带着全新交易执行引擎PTE的FISCO BCOS已经呼之欲出。</p>
+</div>
+<div class="section" id="id3">
+<h2>架构设计<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p><strong>搭载PTE的FISCO BCOS架构图：</strong></p>
+<p><img alt="../../../../_images/IMG_5177.PNG" src="../../../../_images/IMG_5177.PNG" /></p>
+<p><strong>整个架构的核心流程如下：</strong></p>
+<p>用户通过SDK等客户端将交易发送至节点，此处的交易既可以是可并行执行的交易，也可以是不能并行执行的交易。随后交易在节点间同步，同时拥有打包权的节点调用打包器（Sealer），从交易池（Tx Pool）中取出一定量交易并将其打包成一个区块。此后，区块被发送至共识单元（Consensus）准备进行节点间共识。</p>
+<p>共识前需要执行区块中的交易，此处便是PTE施展威力之处。从架构图中可以看到，PTE首先按序读取区块中的交易，并输入到DAG构造器（DAG Constructor）中，DAG构造器会根据每笔交易的依赖项，构造出一个包含所有交易的交易DAG，PTE随后唤醒工作线程池，使用多个线程并行执行交易DAG。汇合器（Joiner）负责挂起主线程，直到工作线程池中所有线程将DAG执行完毕，此时Joiner负责根据各个交易对状态的修改记录计算state root及receipt root，并将执行结果返回至上层调用者。</p>
+<p>在交易执行完成后，若各个节点状态一致，则达成共识，区块随即写入底层存储（Storage），被永久记录于区块链上。</p>
+</div>
+<div class="section" id="id4">
+<h2>核心算法<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<div class="section" id="id5">
+<h3>1.交易DAG的数据结构<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<p>交易DAG的数据结构如下图所示：</p>
+<p><img alt="../../../../_images/IMG_5178.PNG" src="../../../../_images/IMG_5178.PNG" /></p>
+<p><strong>Vertex类</strong>为最基础里的类型，在交易DAG中，每一个Vertex实例都表征一笔交易。Vertex类包含：</p>
+<ul class="simple">
+<li><strong>inDegree</strong>：表示该顶点的入度</li>
+<li><strong>outEdges</strong>：用于存储该节点的出边信息，即所有出边所连顶点的ID列表</li>
+</ul>
+<p><strong>DAG类</strong>用于对DAG的顶点与边关系进行封装，并提供操作DAG的接口，其包含：</p>
+<ul class="simple">
+<li><strong>vtxs</strong>：Vertex数组</li>
+<li><strong>topLevel</strong>：包含所有入度为0的顶点的队列，由于在执行过程中topLevel会动态变化且会被多个线程访问，因此其需要一个能够支持线程安全访问的容器</li>
+<li><strong>void init(int32_t size)接口</strong>：根据传入的size初始化一个包含相应数量顶点的DAG结构</li>
+<li><strong>addEdge(ID from, ID to)接口</strong>：用于在顶点from和顶点to之间建立边关系，具体地说，将顶点to的ID加入顶点from的outEdges中</li>
+<li><strong>void generate()接口</strong>：当所有的边关系录入完毕后，调用该方法以初始化topLevel成员</li>
+<li><strong>ID waitPop()接口</strong>：从topLevel中获取一个入度为0的顶点ID</li>
+</ul>
+<p><strong>TxDAG类</strong>是DAG类更上一层的封装，是DAG与交易之间建立联系的桥梁，其包含：</p>
+<ul class="simple">
+<li><strong>dag</strong>：持有的DAG类实例</li>
+<li><strong>exeCnt</strong>：已执行过的交易总数</li>
+<li><strong>totalTxs</strong>：交易总数</li>
+<li><strong>txs</strong>：区块中的交易列表</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>2. 交易DAG的构造流程<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p>DAG构造器在构造交易DAG时，会首先将totalTxs成员的值设置为区块中的交易总数，并依据交易总数对dag对象进行初始化，dag会在vtxs中为每笔交易生成一个位置关系一一对应的顶点实例。随后，初始化一个空的资源映射表criticalFields，并按序逐个扫描每笔交易。</p>
+<p>对于某笔交易tx，DAG构造器会在其解析出该交易的所有依赖项，对于每个依赖项均会去criticalFields中查询，如果对于某个依赖项d，有前序交易也依赖于该依赖项，则在这两笔交易间建边，并更新criticalFields中d的映射项为tx的ID。</p>
+<p>交易DAG构造流程的伪代码如下所示：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>criticalFields ← map&lt;string, ID&gt;();
+totalTxs ← txs.size();
+dag.init(txs.size());
+for id ← 0 to txs.size() by 1 do
+  tx ← txs[id];
+  dependencies ← 解析出tx的依赖项;
+  for d in dependencies do
+    if d in criticalFields then
+        dag.addEdge(id, criticalFields[d]);
+      end
+    criticalFields[d] = id;
+    end
+  end
+end
+dag.generate();
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>3.交易DAG的执行流程<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>PTE在被创建时，会根据配置生成一个用于执行交易DAG的工作线程池，线程池的大小默认等于CPU的逻辑核心数，此线程池的生命周期与PTE的生命周期相同。工作线程会不断调用dag对象的waitPop方法以取出入度为0的就绪交易并执行，执行后该交易的所有后序依赖任务的入度减1，若有交易的入度被减至0，则将该交易加入到topLevel中。循环上述过程，直到交易DAG执行完毕。</p>
+<p>交易DAG执行流程的伪代码如下所示：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>while exeCnt &lt; totalTxs do
+  id ← dag.waitPop();
+  tx ← txs[id];
+  执行tx;
+  exeCnt ← exeCnt + 1;
+  for txID in dag.vtxs[id].outEdges do
+    dag.vtxs[txID].inDegree ← dag.vtxs[txID].inDegree - 1;
+    if dag.vtxs[txID].inDegree == 0 then
+      dag.topLevel.push(txID)
+    end
+  end
+end    
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>性能测评<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<p>我们选用了2个基准测试程序，用以测试PTE给FISCO BCOS的性能带来了怎样的变化，它们分别是基于预编译框架实现的转账合约和基于Solidity语言编写的转账合约，两份合约代码的路径分别为：</p>
+<p>FISCO-BCOS/libprecompiled/extension/DagTransferPrecompiled.cpp</p>
+<p>web3sdk/src/test/resources/contract/ParallelOk.sol</p>
+<p>我们使用一条单节点链进行测试，因为我们主要关注PTE的交易处理性能，因此并不考虑网络、存储的延迟带来的影响。</p>
+<p><strong>测试环境的基本硬件信息如下表所示</strong>：</p>
+<p><img alt="../../../../_images/IMG_5179.PNG" src="../../../../_images/IMG_5179.PNG" /></p>
+<div class="section" id="id9">
+<h3>1.性能测试<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h3>
+<p><img alt="../../../../_images/IMG_5180.JPG" src="../../../../_images/IMG_5180.JPG" /></p>
+<p>性能测试部分，我们主要测试PTE和串行交易执行方式（Serial）在各个测试程序下的交易处理能力。可以看到，相对于串行执行方式，PTE从左至右分别实现了2.91和2.69倍的加速比。无论是对于预编译合约还是Solidity合约，PTE均有着不俗的性能表现。</p>
+</div>
+<div class="section" id="id10">
+<h3>2.可扩展性测试<a class="headerlink" href="#id10" title="永久链接至标题">¶</a></h3>
+<p><img alt="../../../../_images/IMG_5181.JPG" src="../../../../_images/IMG_5181.JPG" /></p>
+<p>可扩展性测试部分，我们主要测试PTE在不同CPU核心数下的交易处理能力，使用的基准测试程序是基于预编译框架实现的转账合约。可以看到，随着核数增加，PTE的交易吞吐量呈近似线性递增。但是同时也能看到，随着核数在增加，性能增长的幅度在放缓，这是因为随着核数增加线程间调度及同步的开销也会增大。</p>
+<div class="section" id="id11">
+<h4>写在最后<a class="headerlink" href="#id11" title="永久链接至标题">¶</a></h4>
+<p>从列表到DAG，PTE赋予了FISCO BCOS新的进化。更高的TPS会将FISCO BCOS带至更加广阔的舞台。予以长袖，FISCO BCOS必能善舞！</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="parallel_transformation.html" class="btn btn-neutral float-right" title="让木桶没有短板，FISCO BCOS全面推进并行化改造" accesskey="n"
+      rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+    
+    
+    <a href="distributed_storage_experience.html" class="btn btn-neutral" title="FISCO BCOS 2.0使用教程： 分布式存储体验" accesskey="p"
+      rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+    
+  </div>
+  
+
+  <hr />
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright FISCO BCOS 2019.
+
+      本技术文档适用于FISCO BCOS 2.0+版本，FISCO BCOS 3.0+版本技术文档请查看 <a rel="1.x-documents"
+      href="https://fisco-bcos-doc.readthedocs.io/">这里</a>， FISCO BCOS 1.3版本技术文档请查看 <a rel="1.x-documents"
+        href="http://fisco-bcos-documentation.readthedocs.io/zh_CN/release-1.3/">这里</a>。
+      
+      <span class="commit">
+        Revision <code>b34671a7</code>.
+      </span>
+      
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+    href="https://github.com/snide/sphinx_rtd_theme">theme</a>
+  provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Read the Docs</span>
+      v: latest
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">
+      <dl>
+        <dt>Versions</dt>
+        
+          <dd><a href="/zh_CN/latest/">latest</a></dd>
+        
+          <dd><a href="/zh_CN/stable/">stable</a></dd>
+        
+          <dd><a href="/zh_CN/v2.8.0/">v2.8.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.6.0/">v2.6.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.5.0/">v2.5.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.4.0/">v2.4.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.3.0/">v2.3.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.2.0/">v2.2.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.1.0/">v2.1.0</a></dd>
+        
+          <dd><a href="/zh_CN/v2.0.0/">v2.0.0</a></dd>
+        
+          <dd><a href="/zh_CN/release-3.0.0-rc2/">release-3.0.0-rc2</a></dd>
+        
+          <dd><a href="/zh_CN/release-2-dev/">release-2-dev</a></dd>
+        
+          <dd><a href="/zh_CN/release-2.8.0/">release-2.8.0</a></dd>
+        
+          <dd><a href="/zh_CN/release-2.7.0/">release-2.7.0</a></dd>
+        
+          <dd><a href="/zh_CN/release-2.1.0/">release-2.1.0</a></dd>
+        
+          <dd><a href="/zh_CN/release-1.3/">release-1.3</a></dd>
+        
+          <dd><a href="/zh_CN/dev/">dev</a></dd>
+        
+      </dl>
+      <dl>
+        <dt>Downloads</dt>
+        
+          <dd><a href="//fisco-bcos-documentation.readthedocs.io/_/downloads/zh_CN/latest/pdf/">pdf</a></dd>
+        
+          <dd><a href="//fisco-bcos-documentation.readthedocs.io/_/downloads/zh_CN/latest/htmlzip/">html</a></dd>
+        
+          <dd><a href="//fisco-bcos-documentation.readthedocs.io/_/downloads/zh_CN/latest/epub/">epub</a></dd>
+        
+      </dl>
+      <dl>
+        <dt>On Read the Docs</dt>
+          <dd>
+            <a href="//readthedocs.org/projects/fisco-bcos-documentation/?fromdocs=fisco-bcos-documentation">Project Home</a>
+          </dd>
+          <dd>
+            <a href="//readthedocs.org/builds/fisco-bcos-documentation/?fromdocs=fisco-bcos-documentation">Builds</a>
+          </dd>
+      </dl>
+      <hr/>
+      Free document hosting provided by <a href="http://www.readthedocs.org">Read the Docs</a>.
+
+    </div>
+  </div>
+
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+   
+
+</body>
+</html>
